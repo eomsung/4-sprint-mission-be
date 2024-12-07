@@ -1,9 +1,10 @@
 import express from "express";
 import { Product } from "./models/product.js";
 import mongoose from "mongoose";
-import { config } from "dotenv";
+import * as dotenv from "dotenv";
 import cors from "cors";
-config();
+
+dotenv.config();
 
 const app = express();
 

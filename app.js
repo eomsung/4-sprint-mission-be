@@ -55,8 +55,7 @@ app.get(
 
     const totalCount = await Product.countDocuments();
 
-    // res.send({ list: products, totalCount });
-    res.send(products);
+    res.send({ list: products, totalCount });
   })
 );
 

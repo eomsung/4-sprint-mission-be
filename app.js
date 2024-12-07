@@ -51,8 +51,8 @@ app.get(
       .select("name price createdAt")
       .sort(sortOption)
       .skip(offset)
-      .limit(limit)
-      .lean();
+      .limit(limit);
+    // .lean();
 
     const totalCount = await Product.countDocuments();
 

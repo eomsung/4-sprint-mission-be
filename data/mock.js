@@ -5,7 +5,7 @@ const products = [
     price: 10,
     tags: ["string"],
     images: ["string"],
-    favoriteCount: 0,
+    favoriteCount: 1,
   },
   {
     name: "새 상품",
@@ -13,7 +13,7 @@ const products = [
     price: 100,
     tags: ["태그1", "태그2"],
     images: ["이미지_주소"],
-    favoriteCount: 0,
+    favoriteCount: 3,
   },
   {
     name: "새 상품",
@@ -21,7 +21,7 @@ const products = [
     price: 100,
     tags: ["태그1", "태그2", ""],
     images: ["이미지_주소", " "],
-    favoriteCount: 0,
+    favoriteCount: 4,
   },
   {
     name: "test1",
@@ -29,7 +29,7 @@ const products = [
     price: 20,
     tags: ["string2"],
     images: ["string"],
-    favoriteCount: 0,
+    favoriteCount: 5,
   },
   {
     name: "test1",

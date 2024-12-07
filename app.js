@@ -35,23 +35,23 @@ app.use(express.json());
 app.get(
   "/products",
   asyncHandler(async (req, res) => {
-    const { sort = "recent", page = 1, limit = 10 } = req.query;
-    const offset = (page - 1) * limit;
+    const { orderBy = "recent", page = 1, pageSize = 10 } = req.query;
+    const offset = (page - 1) * pageSize;
 
-    if (page < 1 || limit < 1) {
+    if (page < 1 || pageSize < 1) {
       return res.status(400).send({
         message: "Page and limit is less than 1",
       });
     }
 
     const sortOption =
-      sort === "recent" ? { createdAt: "desc" } : { favoriteCount: "desc" };
+      orderBy === "recent" ? { createdAt: "desc" } : { favoriteCount: "desc" };
 
     const products = await Product.find()
-      .select("name price createdAt")
+      .select("name price createdAt favoriteCount")
       .sort(sortOption)
       .skip(offset)
-      .limit(limit);
+      .limit(pageSize);
 
     const totalCount = await Product.countDocuments();
 

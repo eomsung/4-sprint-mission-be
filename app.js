@@ -1,0 +1,105 @@
+import express from "express";
+import { Product } from "./models/product.js";
+import mongoose from "mongoose";
+import { config } from "dotenv";
+import cors from "cors";
+config();
+
+const app = express();
+
+app.use(cors({}));
+
+const asyncHandler = (handler) => {
+  return (req, res) => {
+    try {
+      handler(req, res);
+    } catch (e) {
+      switch (e.name) {
+        case "ValidationError":
+          res.status(400).send({ message: e.message });
+          break;
+        case "CastError":
+          res.status(404).send({ message: "Cannot find given id" });
+          break;
+        default:
+          res.status(500).send({ message: e.message });
+          break;
+      }
+    }
+  };
+};
+
+app.use(express.json());
+
+app.get(
+  "/products",
+  asyncHandler(async (req, res) => {
+    const { sort = "recent", page = 1, limit = 10 } = req.query;
+    const offset = (page - 1) * limit;
+
+    if (page < 1 || limit < 1) {
+      return res.status(400).send({
+        message: "Page and limit is less than 1",
+      });
+    }
+
+    const sortOption =
+      sort === "recent" ? { createdAt: "desc" } : { favoriteCount: "desc" };
+
+    const products = await Product.find()
+      .select("name price createdAt")
+      .sort(sortOption)
+      .skip(offset)
+      .limit(limit);
+    res.send(products);
+  })
+);
+
+app.get(
+  "/products/:id",
+  asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    const product = await Product.findById(id).select("-updatedAt");
+    res.send(product);
+  })
+);
+
+app.post(
+  "/products",
+  asyncHandler(async (req, res) => {
+    const product = await Product.create(req.body);
+    res.status(201).send(product);
+  })
+);
+
+app.patch(
+  "/products/:id",
+  asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    const product = await Product.findById(id);
+    Object.keys(req.body).forEach((key) => {
+      product[key] = req.body[key];
+    });
+    product.updatedAt = new Date();
+    await product.save();
+
+    res.send(product);
+  })
+);
+
+app.delete(
+  "/products/:id",
+  asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    await Product.findByIdAndDelete(id);
+    res.sendStatus(204);
+  })
+);
+
+mongoose
+  .connect(process.env.DATABASE_URL)
+  .then(() => console.log("Connected to DB"));
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`Server started`);
+});

@@ -8,7 +8,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({}));
+app.use(
+  cors({
+    origin: [
+      "https://4-sprint-mission-fe-c56s.vercel.app",
+      "https://localhost:3000",
+    ],
+  })
+);
 
 const asyncHandler = (handler) => {
   return async (req, res) => {

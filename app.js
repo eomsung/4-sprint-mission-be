@@ -51,8 +51,12 @@ app.get(
       .select("name price createdAt")
       .sort(sortOption)
       .skip(offset)
-      .limit(limit);
-    res.send(products);
+      .limit(limit)
+      .lean();
+
+    const totalCount = await Product.countDocuments();
+
+    res.send({ list: products, totalCount });
   })
 );
 

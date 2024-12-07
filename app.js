@@ -10,9 +10,9 @@ const app = express();
 app.use(cors({}));
 
 const asyncHandler = (handler) => {
-  return (req, res) => {
+  return async (req, res) => {
     try {
-      handler(req, res);
+      await handler(req, res);
     } catch (e) {
       switch (e.name) {
         case "ValidationError":

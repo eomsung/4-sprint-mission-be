@@ -59,7 +59,14 @@ app.get(
     const sortOption =
       orderBy === "recent" ? { createdAt: "desc" } : { favoriteCount: "desc" };
 
-    const search = keyword ? { $text: { $search: keyword } } : {};
+    const search = keyword
+      ? {
+          $or: [
+            { name: { $regex: keyword, $options: "i" } },
+            { description: { $regex: keyword, $options: "i" } },
+          ],
+        }
+      : {};
 
     const products = await Product.find(search)
       .select("name price createdAt favoriteCount")

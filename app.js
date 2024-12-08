@@ -76,7 +76,7 @@ app.get(
 );
 
 app.post(
-  "/registration",
+  "/products",
   asyncHandler(async (req, res) => {
     const product = await Product.create(req.body);
     res.status(201).send(product);

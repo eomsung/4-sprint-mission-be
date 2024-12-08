@@ -10,10 +10,10 @@ const app = express();
 
 app.use(
   cors({
-    origin: [
-      "https://4-sprint-mission-fe-c56s.vercel.app",
-      "http://localhost:3000",
-    ],
+    // origin: [
+    //   "https://4-sprint-mission-fe-c56s.vercel.app",
+    //   "http://localhost:3000",
+    // ],
   })
 );
 

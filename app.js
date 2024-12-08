@@ -42,7 +42,12 @@ app.use(express.json());
 app.get(
   "/products",
   asyncHandler(async (req, res) => {
-    const { orderBy = "recent", page = 1, pageSize = 10 } = req.query;
+    const {
+      orderBy = "recent",
+      page = 1,
+      pageSize = 10,
+      keyword = "",
+    } = req.query;
     const offset = (page - 1) * pageSize;
 
     if (page < 1 || pageSize < 1) {
@@ -54,13 +59,15 @@ app.get(
     const sortOption =
       orderBy === "recent" ? { createdAt: "desc" } : { favoriteCount: "desc" };
 
-    const products = await Product.find()
+    const search = keyword ? { $text: { $search: keyword } } : {};
+
+    const products = await Product.find(search)
       .select("name price createdAt favoriteCount")
       .sort(sortOption)
       .skip(offset)
       .limit(pageSize);
 
-    const totalCount = await Product.countDocuments();
+    const totalCount = await Product.countDocuments(search);
 
     res.send({ list: products, totalCount });
   })

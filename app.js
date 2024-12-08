@@ -12,7 +12,7 @@ app.use(
   cors({
     origin: [
       "https://4-sprint-mission-fe-c56s.vercel.app",
-      "https://localhost:3000",
+      "http://localhost:3000",
     ],
   })
 );

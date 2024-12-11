@@ -37,7 +37,7 @@ const asyncHandler = (handler) => {
     }
   };
 };
-
+/*********** products ***********/
 app.get(
   "/products",
   asyncHandler(async (req, res) => {
@@ -51,7 +51,7 @@ app.get(
 
     if (page < 1 || pageSize < 1) {
       return res.status(400).send({
-        message: "Page and limit is less than 1",
+        message: "Page and limit must be greater than 0",
       });
     }
 
@@ -60,21 +60,28 @@ app.get(
 
     const search = keyword
       ? {
-          $or: [
-            { name: { $regex: keyword, $options: "i" } },
-            { description: { $regex: keyword, $options: "i" } },
+          OR: [
+            { name: { contains: keyword, mode: "insensitive" } },
+            { description: { contains: keyword, mode: "insensitive" } },
           ],
         }
       : {};
 
-    const products = await prisma.product
-      .find(search)
-      .select("name price createdAt favoriteCount")
-      .sort(sortOption)
-      .skip(offset)
-      .limit(pageSize);
-
-    const totalCount = await prisma.product.countDocuments(search);
+    const products = await prisma.product.findMany({
+      where: search,
+      select: {
+        name: true,
+        price: true,
+        createdAt: true,
+        favoriteCount: true,
+      },
+      orderBy: sortOption,
+      skip: parseInt(offset),
+      take: parseInt(pageSize),
+    });
+    const totalCount = await prisma.product.count({
+      where: search,
+    });
 
     res.send({ list: products, totalCount });
   })
@@ -84,7 +91,19 @@ app.get(
   "/products/:id",
   asyncHandler(async (req, res) => {
     const id = req.params.id;
-    const product = await prisma.product.findById(id).select("-updatedAt");
+    const product = await prisma.product.findUniqueOrThrow({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        tags: true,
+        favoriteCount: true,
+        images: true,
+        createdAt: true,
+      },
+    });
     res.send(product);
   })
 );
@@ -93,7 +112,7 @@ app.post(
   "/products",
   asyncHandler(async (req, res) => {
     assert(req.body, CreateProduct);
-    const product = await prisma.product.create(req.body);
+    const product = await prisma.product.create({ data: { ...req.body } });
     res.status(201).send(product);
   })
 );
@@ -103,12 +122,12 @@ app.patch(
   asyncHandler(async (req, res) => {
     assert(req.body, PatchProdcut);
     const id = req.params.id;
-    const product = await prisma.product.findById(id);
-    Object.keys(req.body).forEach((key) => {
-      product[key] = req.body[key];
+    const product = await prisma.product.update({
+      where: { id },
+      data: {
+        ...req.body,
+      },
     });
-    product.updatedAt = new Date();
-    await product.save();
 
     res.send(product);
   })
@@ -118,10 +137,14 @@ app.delete(
   "/products/:id",
   asyncHandler(async (req, res) => {
     const id = req.params.id;
-    await prisma.product.findByIdAndDelete(id);
+    await prisma.product.delete({
+      where: { id },
+    });
     res.sendStatus(204);
   })
 );
+
+/*********** articles ***********/
 
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Server started`);

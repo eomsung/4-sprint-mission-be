@@ -19,7 +19,7 @@ model Product {
   description   String
   price         Int
   tags          String[]
-  favoriteCount Int
+  favoriteCount Int @default(0)
   images        String[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

@@ -11,4 +11,4 @@ export const CreateProduct = s.object({
   images: s.optional(s.array(s.string())),
 });
 
-const PatchProdcut = s.partial(CreateProduct);
+export const PatchProdcut = s.partial(CreateProduct);

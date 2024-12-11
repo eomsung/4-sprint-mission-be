@@ -1,11 +1,11 @@
 import express from "express";
-import { Product } from "./models/product.js";
-import mongoose from "mongoose";
+import { PrismaClient, Prisma } from "@prisma/client";
+import { assert } from "superstruct";
 import * as dotenv from "dotenv";
 import cors from "cors";
-
+import { CreateProduct, PatchProdcut } from "./structs.js";
 dotenv.config();
-
+const prisma = new PrismaClient();
 const app = express();
 
 app.use(
@@ -16,6 +16,7 @@ app.use(
     ],
   })
 );
+app.use(express.json());
 
 const asyncHandler = (handler) => {
   return async (req, res) => {
@@ -36,8 +37,6 @@ const asyncHandler = (handler) => {
     }
   };
 };
-
-app.use(express.json());
 
 app.get(
   "/products",
@@ -68,13 +67,14 @@ app.get(
         }
       : {};
 
-    const products = await Product.find(search)
+    const products = await prisma.product
+      .find(search)
       .select("name price createdAt favoriteCount")
       .sort(sortOption)
       .skip(offset)
       .limit(pageSize);
 
-    const totalCount = await Product.countDocuments(search);
+    const totalCount = await prisma.product.countDocuments(search);
 
     res.send({ list: products, totalCount });
   })
@@ -84,7 +84,7 @@ app.get(
   "/products/:id",
   asyncHandler(async (req, res) => {
     const id = req.params.id;
-    const product = await Product.findById(id).select("-updatedAt");
+    const product = await prisma.product.findById(id).select("-updatedAt");
     res.send(product);
   })
 );
@@ -92,7 +92,8 @@ app.get(
 app.post(
   "/products",
   asyncHandler(async (req, res) => {
-    const product = await Product.create(req.body);
+    assert(req.body, CreateProduct);
+    const product = await prisma.product.create(req.body);
     res.status(201).send(product);
   })
 );
@@ -100,8 +101,9 @@ app.post(
 app.patch(
   "/products/:id",
   asyncHandler(async (req, res) => {
+    assert(req.body, PatchProdcut);
     const id = req.params.id;
-    const product = await Product.findById(id);
+    const product = await prisma.product.findById(id);
     Object.keys(req.body).forEach((key) => {
       product[key] = req.body[key];
     });
@@ -116,14 +118,10 @@ app.delete(
   "/products/:id",
   asyncHandler(async (req, res) => {
     const id = req.params.id;
-    await Product.findByIdAndDelete(id);
+    await prisma.product.findByIdAndDelete(id);
     res.sendStatus(204);
   })
 );
-
-mongoose
-  .connect(process.env.DATABASE_URL)
-  .then(() => console.log("Connected to DB"));
 
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Server started`);

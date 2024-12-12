@@ -19,25 +19,27 @@ app.use(
 app.use(express.json());
 
 const asyncHandler = (handler) => {
-  return async (req, res) => {
+  return async function (req, res) {
     try {
       await handler(req, res);
     } catch (e) {
-      switch (e.name) {
-        case "ValidationError":
-          res.status(400).send({ message: e.message });
-          break;
-        case "CastError":
-          res.status(404).send({ message: "Cannot find given id" });
-          break;
-        default:
-          res.status(500).send({ message: e.message });
-          break;
+      if (
+        e.name === "StructError" ||
+        e instanceof Prisma.PrismaClientValidationError
+      ) {
+        res.status(400).send({ message: e.message });
+      } else if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === "P2025"
+      ) {
+        res.sendStatus(404);
+      } else {
+        res.status(500).send({ message: e.message });
       }
     }
   };
 };
-/*********** products ***********/
+/*********** products ***********/ //유효성 검사 추가하기
 app.get(
   "/products",
   asyncHandler(async (req, res) => {
@@ -51,7 +53,7 @@ app.get(
 
     if (page < 1 || pageSize < 1) {
       return res.status(400).send({
-        message: "Page and limit must be greater than 0",
+        message: "Page and limit is less than 1",
       });
     }
 
@@ -145,6 +147,87 @@ app.delete(
 );
 
 /*********** articles ***********/
+app.post(
+  "/article",
+  asyncHandler(async (req, res) => {
+    const article = await prisma.article.create({
+      data: { ...req.body },
+    });
+    res.status(204).send(article);
+  })
+);
+
+app.get(
+  "/article/:id",
+  asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    const article = await prisma.article.findUniqueOrThrow({
+      where: { id },
+    });
+    res.send(article);
+  })
+);
+
+app.patch(
+  "/article/:id",
+  asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    const article = await prisma.article.update({
+      where: { id },
+      data: { ...req.body },
+    });
+    res.send(article);
+  })
+);
+
+app.delete(
+  "/article/:id",
+  asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    await prisma.article.delete({
+      where: { id },
+    });
+    res.sendStatus(204);
+  })
+);
+
+app.get(
+  "/article",
+  asyncHandler(async (req, res) => {
+    const {
+      orderBy = "recent",
+      page = 1,
+      pageSize = 10,
+      keyword = "",
+    } = req.query;
+
+    if (page < 1 || pageSize < 1) {
+      return res.status(400).send({
+        message: "Page and limit is less than 1",
+      });
+    }
+
+    const offset = (page - 1) * pageSize;
+
+    const sortOption =
+      orderBy === recent ? { createdAt: "desc" } : { createdAt: "asc" };
+    const search = keyword
+      ? {
+          OR: [
+            { title: { contains: keyword, mode: "insensitive" } },
+            { description: { contains: keyword, mode: "insensitive" } },
+          ],
+        }
+      : {};
+    const articles = await prisma.article.findMany({
+      where: { search },
+      orderBy: sortOption,
+      skip: parseInt(offset),
+      take: parseInt(pageSize),
+    });
+    res.send(articles);
+  })
+);
 
 app.listen(process.env.PORT || 3000, () => {
   console.log(`Server started`);

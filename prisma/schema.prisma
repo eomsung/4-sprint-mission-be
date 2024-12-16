@@ -19,16 +19,26 @@ model Product {
   description   String
   price         Int
   tags          String[]
-  favoriteCount Int @default(0)
+  favoriteCount Int      @default(0)
   images        String[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
 
 model Article {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   title     String
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  Comment   Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  article   Article  @relation(fields: [articleId], references: [id])
+  articleId String
 }

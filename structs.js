@@ -1,6 +1,4 @@
 import * as s from "superstruct";
-import isEmail from "is-email";
-import isUuid from "is-uuid";
 
 export const CreateProduct = s.object({
   name: s.size(s.string(), 1, 10),
@@ -12,3 +10,16 @@ export const CreateProduct = s.object({
 });
 
 export const PatchProdcut = s.partial(CreateProduct);
+
+export const CreateArticle = s.object({
+  title: s.string(),
+  content: s.string(),
+});
+
+export const PatchArticle = s.partial(CreateArticle);
+
+export const CreateComment = s.object({
+  content: s.string(),
+});
+
+export const PatchComment = s.partial(CreateComment);

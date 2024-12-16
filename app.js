@@ -3,7 +3,14 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import { assert } from "superstruct";
 import * as dotenv from "dotenv";
 import cors from "cors";
-import { CreateProduct, PatchProdcut } from "./structs.js";
+import {
+  CreateProduct,
+  PatchProdcut,
+  CreateArticle,
+  PatchArticle,
+  CreateComment,
+  PatchComment,
+} from "./structs.js";
 dotenv.config();
 const prisma = new PrismaClient();
 const app = express();
@@ -50,10 +57,16 @@ app.get(
       keyword = "",
     } = req.query;
     const offset = (page - 1) * pageSize;
-
-    if (page < 1 || pageSize < 1) {
+    page = parseInt(page);
+    pageSize = parseInt(pageSize);
+    if (
+      !Number.isInteger(page) ||
+      page < 1 ||
+      !Number.isInteger(pageSize) ||
+      pageSize < 1
+    ) {
       return res.status(400).send({
-        message: "Page and limit is less than 1",
+        message: "Page and pagesize is invaild",
       });
     }
 
@@ -124,6 +137,11 @@ app.patch(
   asyncHandler(async (req, res) => {
     assert(req.body, PatchProdcut);
     const id = req.params.id;
+
+    await prisma.product.findUniqueOrThrow({
+      where: { id },
+    });
+
     const product = await prisma.product.update({
       where: { id },
       data: {
@@ -139,6 +157,10 @@ app.delete(
   "/products/:id",
   asyncHandler(async (req, res) => {
     const id = req.params.id;
+    await prisma.product.findUniqueOrThrow({
+      where: { id },
+    });
+
     await prisma.product.delete({
       where: { id },
     });
@@ -150,10 +172,11 @@ app.delete(
 app.post(
   "/article",
   asyncHandler(async (req, res) => {
+    assert(req.body, CreateArticle);
     const article = await prisma.article.create({
       data: { ...req.body },
     });
-    res.status(204).send(article);
+    res.status(201).send(article);
   })
 );
 
@@ -161,6 +184,7 @@ app.get(
   "/article/:id",
   asyncHandler(async (req, res) => {
     const id = req.params.id;
+
     const article = await prisma.article.findUniqueOrThrow({
       where: { id },
     });
@@ -171,7 +195,11 @@ app.get(
 app.patch(
   "/article/:id",
   asyncHandler(async (req, res) => {
+    assert(req.body, PatchArticle);
     const id = req.params.id;
+    await prisma.article.findUniqueOrThrow({
+      where: { id },
+    });
     const article = await prisma.article.update({
       where: { id },
       data: { ...req.body },
@@ -184,6 +212,9 @@ app.delete(
   "/article/:id",
   asyncHandler(async (req, res) => {
     const id = req.params.id;
+    await prisma.article.findUniqueOrThrow({
+      where: { id },
+    });
     await prisma.article.delete({
       where: { id },
     });
@@ -201,9 +232,16 @@ app.get(
       keyword = "",
     } = req.query;
 
-    if (page < 1 || pageSize < 1) {
+    page = parseInt(page);
+    pageSize = parseInt(pageSize);
+    if (
+      !Number.isInteger(page) ||
+      page < 1 ||
+      !Number.isInteger(pageSize) ||
+      pageSize < 1
+    ) {
       return res.status(400).send({
-        message: "Page and limit is less than 1",
+        message: "Page and pagesize is invaild",
       });
     }
 
@@ -226,6 +264,59 @@ app.get(
       take: parseInt(pageSize),
     });
     res.send(articles);
+  })
+);
+/*********** Commnet ***********/
+app.post(
+  "/article/:id/comment",
+  asyncHandler(async (req, res) => {
+    assert(req.body, CreateComment);
+    const articleId = req.params.id;
+    const article = await prisma.article.findUniqueOrThrow({
+      where: { id: articleId },
+    });
+    const comment = await prisma.comment.create({
+      data: {
+        content: req.body.content,
+        articleId: article.id,
+      },
+    });
+
+    res.status(201).send(comment);
+  })
+);
+
+app.patch(
+  "/article/comment/:id",
+  asyncHandler(async (req, res) => {
+    assert(req.body, PatchComment);
+    const commentId = req.params.id;
+    await prisma.comment.findUniqueOrThrow({
+      where: { id: commentId },
+    });
+    const { content } = req.body;
+
+    const comment = await prisma.comment.update({
+      where: { id: commentId },
+      data: { content },
+    });
+
+    res.send(comment);
+  })
+);
+
+app.delete(
+  "/article/comment/:id",
+  asyncHandler(async (req, res) => {
+    const commentId = req.params.id;
+    await prisma.comment.findUniqueOrThrow({
+      where: { id: commentId },
+    });
+    await prisma.comment.delete({
+      where: { id: commentId },
+    });
+
+    res.sendStatus(204);
   })
 );
 

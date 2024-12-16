@@ -11,14 +11,14 @@ Content-Type: application/json
 GET http://localhost:3001/products
 
 ###
-PATCH http://localhost:3001/products/ba08e55a-9c22-4712-acd4-e1206691e0ed
+PATCH http://localhost:3001/products/3ab0cada-ad77-441d-93ae-1e269b2171b1
 Content-Type: application/json
 
 {
   "name": "Laptoap",
   "description": "High performance laptop.",
   "price": 1200,
-  "tags": ["tech", "pc", "work"],
+  "tags": ["tech", "pc", "work"]
 }
 
 ###

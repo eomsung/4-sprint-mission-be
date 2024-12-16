@@ -50,7 +50,7 @@ const asyncHandler = (handler) => {
 app.get(
   "/products",
   asyncHandler(async (req, res) => {
-    const {
+    let {
       orderBy = "recent",
       page = 1,
       pageSize = 10,
@@ -317,6 +317,43 @@ app.delete(
     });
 
     res.sendStatus(204);
+  })
+);
+
+app.get(
+  "/article/:id/comments",
+  asyncHandler(async (req, res) => {
+    let { cursor, pageSize = 10 } = req.query;
+
+    pageSize = parseInt(pageSize);
+    if (!Number.isInteger(pageSize) || pageSize < 1) {
+      return res.status(400).send({
+        message: "pagesize is invaild",
+      });
+    }
+
+    const articleId = req.params.id;
+    await prisma.article.findUniqueOrThrow({
+      where: { id: articleId },
+    });
+    const comments = await prisma.comment.findMany({
+      where: {
+        articleId,
+      },
+      take: parseInt(pageSize),
+      cursor: cursor ? { id: cursor } : undefined,
+      orderBy: {
+        createdAt: "asc",
+      },
+    });
+
+    const nextCursor =
+      comments.length === pageSize ? comments[comments.length - 1].id : null;
+
+    res.send({
+      comments,
+      nextCursor,
+    });
   })
 );
 

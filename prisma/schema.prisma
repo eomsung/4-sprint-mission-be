@@ -26,12 +26,13 @@ model Product {
 }
 
 model Article {
-  id        String    @id @default(uuid())
-  title     String
-  content   String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  Comment   Comment[]
+  id            String    @id @default(uuid())
+  title         String
+  content       String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  Comment       Comment[]
+  favoriteCount Int       @default(0)
 }
 
 model Comment {

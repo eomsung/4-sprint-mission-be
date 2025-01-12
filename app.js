@@ -225,7 +225,7 @@ app.delete(
 app.get(
   "/article",
   asyncHandler(async (req, res) => {
-    const {
+    let {
       orderBy = "recent",
       page = 1,
       pageSize = 10,
@@ -248,7 +248,7 @@ app.get(
     const offset = (page - 1) * pageSize;
 
     const sortOption =
-      orderBy === recent ? { createdAt: "desc" } : { createdAt: "asc" };
+      orderBy === "recent" ? { createdAt: "desc" } : { createdAt: "asc" };
     const search = keyword
       ? {
           OR: [
@@ -258,7 +258,7 @@ app.get(
         }
       : {};
     const articles = await prisma.article.findMany({
-      where: { search },
+      where: search,
       orderBy: sortOption,
       skip: parseInt(offset),
       take: parseInt(pageSize),

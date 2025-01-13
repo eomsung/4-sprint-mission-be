@@ -251,10 +251,7 @@ app.get(
       orderBy === "recent" ? { createdAt: "desc" } : { createdAt: "asc" };
     const search = keyword
       ? {
-          OR: [
-            { title: { contains: keyword, mode: "insensitive" } },
-            { description: { contains: keyword, mode: "insensitive" } },
-          ],
+          OR: [{ title: { contains: keyword, mode: "insensitive" } }],
         }
       : {};
     const articles = await prisma.article.findMany({

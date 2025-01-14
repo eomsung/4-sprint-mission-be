@@ -20,6 +20,7 @@ app.use(
     origin: [
       "https://4-sprint-mission-fe-c56s.vercel.app",
       "http://localhost:3000",
+      "https://4-sprint-mission-fe-8ens-l8drmvvos-sungmins-projects-b79f4630.vercel.app/",
     ],
   })
 );

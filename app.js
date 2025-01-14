@@ -20,7 +20,7 @@ app.use(
     origin: [
       "https://4-sprint-mission-fe-c56s.vercel.app",
       "http://localhost:3000",
-      "https://4-sprint-mission-fe-8ens-l8drmvvos-sungmins-projects-b79f4630.vercel.app/",
+      "https://4-sprint-mission-fe-8ens-l8drmvvos-sungmins-projects-b79f4630.vercel.app",
     ],
   })
 );
@@ -249,7 +249,7 @@ app.get(
     const offset = (page - 1) * pageSize;
 
     const sortOption =
-      orderBy === "recent" ? { createdAt: "desc" } : { createdAt: "asc" };
+      orderBy === "recent" ? { createdAt: "desc" } : { favoriteCount: "desc" };
     const search = keyword
       ? {
           OR: [{ title: { contains: keyword, mode: "insensitive" } }],

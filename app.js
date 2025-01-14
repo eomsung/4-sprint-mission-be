@@ -284,7 +284,7 @@ app.post(
 );
 
 app.patch(
-  "/article/comment/:id",
+  "/article/:id/comment",
   asyncHandler(async (req, res) => {
     assert(req.body, PatchComment);
     const commentId = req.params.id;
@@ -303,7 +303,7 @@ app.patch(
 );
 
 app.delete(
-  "/article/comment/:id",
+  "/article/:id/comment",
   asyncHandler(async (req, res) => {
     const commentId = req.params.id;
     await prisma.comment.findUniqueOrThrow({

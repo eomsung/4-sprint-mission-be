@@ -42,9 +42,10 @@ POST http://localhost:3100/article
 Content-Type: application/json
 
 {
-  "name": "test",
-  "context": "High performance laptop.",
+  "title": "test",
+  "content": "High performance laptop."
 }
+
 
 ###
 GET http://localhost:3100/article/dc79959a-8f68-4ee0-aa5d-cfbc13874d2f
